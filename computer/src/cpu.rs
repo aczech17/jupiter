@@ -1,27 +1,11 @@
-enum Phase
-{
-    IF = 0,
-    DEXE = 1,
-    MEM = 2,
-    WB = 3,
-}
+#![allow(unused)]
 
-use Phase::{IF, DEXE, MEM, WB};
+use crate::cpu_aux::TransferType;
+use crate::cpu_aux::TransferType::*;
+use crate::cpu_aux::Phase;
+use crate::cpu_aux::Phase::*;
 
-#[allow(non_camel_case_types)]
-enum TransferType
-{
-    no_transfer,
-    read_byte,
-    read_half,
-    read_word,
-    read_byte_unsigned,
-    read_half_unsigned,
-    write_byte,
-    write_half,
-    write_word,
-}
-use TransferType::*;
+
 
 struct CPU
 {
@@ -62,7 +46,7 @@ impl CPU
             phase: IF
         }
     }
-    fn next_phase(mut self)
+    fn next_phase(&mut self)
     {
         self.phase = match self.phase
         {
@@ -73,7 +57,7 @@ impl CPU
         };
     }
 
-    fn write_to_reg(mut self, num: u8, data: i32)
+    fn write_to_reg(&mut self, num: u8, data: i32)
     {
         match num
         {
@@ -81,11 +65,11 @@ impl CPU
             32 => self.pc = data as u32,
             33 => self.hi = data,
             34 => self.lo = data,
-            n => self.reg[n] = data,
+            n => self.reg[n as usize] = data,
         };
     }
 
-    fn tick(mut self, data: u32) -> (TransferType, u32, u32)
+    fn tick(&mut self, data: u32) -> (TransferType, u32, u32)
     {
         self.in_out.2 = data; // data read from the bus
         match self.phase
@@ -100,13 +84,13 @@ impl CPU
         return self.in_out;
     }
 
-    fn fetch(mut self)
+    fn fetch(&mut self)
     {
         let (transfer_type, address, data) = (read_word, self.pc, 0);
         self.in_out = (transfer_type, address, data);
     }
 
-    fn decode_and_execute(mut self)
+    fn decode_and_execute(&mut self)
     {
         self.instruction = self.in_out.1;
         self.pc += 4;
@@ -190,7 +174,7 @@ impl CPU
         }
     }
 
-    fn read_from_memory(mut self)
+    fn read_from_memory(&mut self)
     {
         // target is already filled
         match self.in_out.0
@@ -226,7 +210,7 @@ impl CPU
         }
     }
 
-    fn write_back(mut self)
+    fn write_back(&mut self)
     {
         self.write_to_reg(self.target, self.result);
 
@@ -238,82 +222,82 @@ impl CPU
 
 impl CPU // opcodes
 {
-    fn sll(mut self, rd: u8, rt: u8, shift: u8)
+    fn sll(&mut self, rd: u8, rt: u8, shift: u8)
     {
-        let res = self.reg[rt] << shift;
+        let res = self.reg[rt as usize] << shift;
         self.write_to_reg(rd, res);
     }
 
-    fn srl(mut self, rd: u8, rt: u8, shift: u8)
+    fn srl(&mut self, rd: u8, rt: u8, shift: u8)
     {
-        let res = (self.reg[rt] as u32) >> shift;
+        let res = (self.reg[rt as usize] as u32) >> shift;
         self.write_to_reg(rd, res as i32);
     }
 
-    fn sra(mut self, rd: u8, rt: u8, shift: u8)
+    fn sra(&mut self, rd: u8, rt: u8, shift: u8)
     {
-        let res = self.reg[rt] >> shift;
+        let res = self.reg[rt as usize] >> shift;
         self.write_to_reg(rd, res);
     }
 
-    fn sllv(mut self, rd: u8, rt: u8, rs: u8)
+    fn sllv(&mut self, rd: u8, rt: u8, rs: u8)
     {
-        let res = self.reg[rt] << self.reg[rs];
+        let res = self.reg[rt as usize] << self.reg[rs as usize];
         self.write_to_reg(rd, res);
     }
 
-    fn srlv(mut self, rd: u8, rt: u8, rs: u8)
+    fn srlv(&mut self, rd: u8, rt: u8, rs: u8)
     {
-        let res = (self.reg[rt] as u32) >> self.reg[rs];
+        let res = (self.reg[rt as usize] as u32) >> self.reg[rs as usize];
+        self.write_to_reg(rd, res as i32);
+    }
+
+    fn srav(&mut self, rd: u8, rt: u8, rs: u8)
+    {
+        let res = self.reg[rt as usize] >> self.reg[rs as usize];
         self.write_to_reg(rd, res);
     }
 
-    fn srav(mut self, rd: u8, rt: u8, rs: u8)
+    fn jr(&mut self, rs: u8)
     {
-        let res = self.reg[rt] >> self.reg[rs];
-        self.write_to_reg(rd, res);
+        self.write_to_reg(32, self.reg[rs as usize]);
     }
 
-    fn jr(mut self, rs: u8)
-    {
-        self.write_to_reg(32, self.reg[rs]);
-    }
-
-    fn jalr(mut self, rd: u8, rs: u8)
+    fn jalr(&mut self, rd: u8, rs: u8)
     {
         self.write_to_reg(rd, self.pc as i32); // save pc to rd
-        self.write_to_reg(32, self.reg[rs]); // jump to rs
+        self.write_to_reg(32, self.reg[rs as usize]); // jump to rs
     }
 
-    fn syscall(mut self)
+    fn syscall(&mut self)
     {
         // ???
     }
 
-    fn mfhi(mut self, rd: u8)
+    fn mfhi(&mut self, rd: u8)
     {
         self.write_to_reg(rd, self.hi);
     }
 
-    fn mthi(mut self, rs: u8)
+    fn mthi(&mut self, rs: u8)
     {
-        self.write_to_reg(33, self.reg[rs]);
+        self.write_to_reg(33, self.reg[rs as usize]);
     }
 
-    fn mflo(mut self, rd: u8)
+    fn mflo(&mut self, rd: u8)
     {
         self.write_to_reg(rd, self.lo);
     }
 
-    fn mtlo(mut self, rs: u8)
+    fn mtlo(&mut self, rs: u8)
     {
-        self.write_to_reg(34, self.reg[rs]);
+        self.write_to_reg(34, self.reg[rs as usize]);
     }
 
-    fn mult(mut self, rs: u8, rt: u8)
+    fn mult(&mut self, rs: u8, rt: u8)
     {
-        let left: i64 = self.reg[rs] as i64;
-        let right: i64 = self.reg[rt] as i64;
+        let left: i64 = self.reg[rs as usize] as i64;
+        let right: i64 = self.reg[rt as usize] as i64;
 
         let result = left * right;
         let hi = ((result as u64) >> 32) as u32 as i32;
@@ -323,10 +307,10 @@ impl CPU // opcodes
         self.write_to_reg(34, lo);
     }
 
-    fn multu(mut self, rs: u8, rt: u8)
+    fn multu(&mut self, rs: u8, rt: u8)
     {
-        let left: u64 = self.reg[rs] as u64;
-        let right: u64 = self.reg[rt] as u64;
+        let left: u64 = self.reg[rs as usize] as u64;
+        let right: u64 = self.reg[rt as usize] as u64;
 
         let result = left * right;
         let hi = (result >> 32) as u32 as i32;
@@ -336,10 +320,10 @@ impl CPU // opcodes
         self.write_to_reg(34, lo);
     }
 
-    fn div(mut self, rs: u8, rt: u8)
+    fn div(&mut self, rs: u8, rt: u8)
     {
-        let left = self.reg[rs];
-        let right = self.reg[rt];
+        let left = self.reg[rs as usize];
+        let right = self.reg[rt as usize];
 
         let lo = left / right;
         let hi = left % right;
@@ -348,10 +332,10 @@ impl CPU // opcodes
         self.write_to_reg(34, lo);
     }
 
-    fn divu(mut self, rs: u8, rt: u8)
+    fn divu(&mut self, rs: u8, rt: u8)
     {
-        let left = self.reg[rs] as u32;
-        let right = self.reg[rt] as u32;
+        let left = self.reg[rs as usize] as u32;
+        let right = self.reg[rt as usize] as u32;
 
         let lo = left / right;
         let hi = left % right;
@@ -360,57 +344,57 @@ impl CPU // opcodes
         self.write_to_reg(34, lo as i32);
     }
 
-    fn add(mut self, rd: u8, rs: u8, rt: u8)
+    fn add(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        let res = self.reg[rs] + self.reg[rt];
+        let res = self.reg[rs as usize] + self.reg[rt as usize];
         self.write_to_reg(rd, res);
     }
 
-    fn addu(mut self, rd: u8, rs: u8, rt: u8)
+    fn addu(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        let res = self.reg[rs] as u32 + self.reg[rt] as u32;
+        let res = self.reg[rs as usize] as u32 + self.reg[rt as usize] as u32;
         self.write_to_reg(rd, res as i32);
     }
 
-    fn sub(mut self, rd: u8, rs: u8, rt: u8)
+    fn sub(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        let res = self.reg[rs] - self.reg[rt];
+        let res = self.reg[rs as usize] - self.reg[rt as usize];
         self.write_to_reg(rd, res);
     }
 
-    fn subu(mut self, rd: u8, rs: u8, rt: u8)
+    fn subu(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        let res = self.reg[rs] as u32 - self.reg[rt] as u32;
+        let res = self.reg[rs as usize] as u32 - self.reg[rt as usize] as u32;
         self.write_to_reg(rd, res as i32);
     }
 
-    fn and(mut self, rd: u8, rs: u8, rt: u8)
+    fn and(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        let res = self.reg[rs] & self.reg[rt];
+        let res = self.reg[rs as usize] & self.reg[rt as usize];
         self.write_to_reg(rd, res);
     }
 
-    fn or(mut self, rd: u8, rs: u8, rt: u8)
+    fn or(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        let res = self.reg[rs] | self.reg[rt];
+        let res = self.reg[rs as usize] | self.reg[rt as usize];
         self.write_to_reg(rd, res);
     }
 
-    fn xor(mut self, rd: u8, rs: u8, rt: u8)
+    fn xor(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        let res = self.reg[rs] ^ self.reg[rt];
+        let res = self.reg[rs as usize] ^ self.reg[rt as usize];
         self.write_to_reg(rd, res);
     }
 
-    fn nor(mut self, rd: u8, rs: u8, rt: u8)
+    fn nor(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        let res = !(self.reg[rs] | self.reg[rt]);
+        let res = !(self.reg[rs as usize] | self.reg[rt as usize]);
         self.write_to_reg(rd, res);
     }
 
-    fn slt(mut self, rd: u8, rs: u8, rt: u8)
+    fn slt(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        if self.reg[rs] < self.reg[rt]
+        if self.reg[rs as usize] < self.reg[rt as usize]
         {
             self.write_to_reg(rd, 1);
         } else {
@@ -418,9 +402,9 @@ impl CPU // opcodes
         }
     }
 
-    fn sltu(mut self, rd: u8, rs: u8, rt: u8)
+    fn sltu(&mut self, rd: u8, rs: u8, rt: u8)
     {
-        if (self.reg[rs] as u32) < (self.reg[rt] as u32)
+        if (self.reg[rs as usize] as u32) < (self.reg[rt as usize] as u32)
         {
             self.write_to_reg(rd, 1);
         } else {
@@ -429,70 +413,70 @@ impl CPU // opcodes
     }
 
 
-    fn j(mut self, address: u32)
+    fn j(&mut self, address: u32)
     {
         let effective_address = (address << 2) | (self.pc & (0b1111 << 28));
         self.write_to_reg(32, effective_address as i32); // jump to address
     }
 
-    fn jal(mut self, address: u32)
+    fn jal(&mut self, address: u32)
     {
         self.write_to_reg(31, self.pc as i32);
         self.j(address);
     }
 
 
-    fn beq(mut self, rs: u8, rt: u8, imm: i16)
+    fn beq(&mut self, rs: u8, rt: u8, imm: i16)
     {
-        if self.reg[rs] == self.reg[rt]
+        if self.reg[rs as usize] == self.reg[rt as usize]
         {
-            let address = self.pc + (imm as i32);
+            let address = self.pc as i32 + (imm as i32);
             self.write_to_reg(32, address as i32);
         }
     }
 
-    fn bne(mut self, rs: u8, rt: u8, imm: i16)
+    fn bne(&mut self, rs: u8, rt: u8, imm: i16)
     {
-        if self.reg[rs] != self.reg[rt]
+        if self.reg[rs as usize] != self.reg[rt as usize]
         {
-            let address = self.pc + (imm as i32);
+            let address = self.pc as i32 + (imm as i32);
             self.write_to_reg(32, address as i32);
         }
     }
 
-    fn blez(mut self, rs: u8, imm: i16)
+    fn blez(&mut self, rs: u8, imm: i16)
     {
-        if self.reg[rs] <= 0
+        if self.reg[rs as usize] <= 0
         {
-            let address = self.pc + (imm as i32);
+            let address = self.pc as i32 + (imm as i32);
             self.write_to_reg(32, address as i32);
         }
     }
 
-    fn bgtz(mut self, rs: u8, imm: i16)
+    fn bgtz(&mut self, rs: u8, imm: i16)
     {
-        if self.reg[rs] > 0
+        if self.reg[rs as usize] > 0
         {
-            let address = self.pc + (imm as i32);
+            let address = self.pc as i32 + (imm as i32);
             self.write_to_reg(32, address as i32);
         }
     }
 
-    fn addi(mut self, rt: u8, rs: u8, imm: i16)
+    fn addi(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let res = self.reg[rs] + (imm as i32);
+        let res = self.reg[rs as usize] + (imm as i32);
         self.write_to_reg(rt, res);
     }
 
-    fn addiu(mut self, rt: u8, rs: u8, imm: i16)
+    fn addiu(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let res = (self.reg[rs] as u32) + (imm as i32 as u32);
+        let res = (self.reg[rs as usize] as u32) + (imm as i32 as u32);
         self.write_to_reg(rt, res as i32);
     }
 
-    fn slti(mut self, rt: u8, rs: u8, imm: i16)
+    fn slti(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        if self.reg[rs] < imm as i32
+        if self.reg[rs as usize] < imm as i32
         {
             self.write_to_reg(rt, 1);
         } else {
@@ -500,9 +484,9 @@ impl CPU // opcodes
         }
     }
 
-    fn sltiu(mut self, rt: u8, rs: u8, imm: i16)
+    fn sltiu(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        if (self.reg[rs] as u32) < (imm as i32 as u32)
+        if (self.reg[rs as usize] as u32) < (imm as i32 as u32)
         {
             self.write_to_reg(rt, 1)
         }
@@ -511,91 +495,91 @@ impl CPU // opcodes
         }
     }
 
-    fn andi(mut self, rt: u8, rs: u8, imm: i16)
+    fn andi(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let res = self.reg[rs] & (imm as u16 as u32);
+        let res = self.reg[rs as usize] & (imm as u16 as u32 as i32);
         self.write_to_reg(rt, res);
     }
 
-    fn ori(mut self, rt: u8, rs: u8, imm: i16)
+    fn ori(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let res = self.reg[rs] | (imm as u16 as u32);
+        let res = self.reg[rs as usize] | (imm as u16 as u32 as i32);
         self.write_to_reg(rt, res);
     }
 
-    fn xori(mut self, rt: u8, rs: u8, imm: i16)
+    fn xori(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let res = self.reg[rs] ^ (imm as u16 as u32);
+        let res = self.reg[rs as usize] ^ (imm as u16 as u32 as i32);
         self.write_to_reg(rt, res);
     }
 
-    fn lui(mut self, rt: u8, imm: i16)
+    fn lui(&mut self, rt: u8, imm: i16)
     {
         let result = (imm as u16 as u32) << 16;
         self.write_to_reg(rt, result as i32);
     }
 
-    fn lb(mut self, rt: u8, rs: u8, imm: i16)
+    fn lb(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let address = self.reg[rs] + (imm as i32);
+        let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_byte, address, 0);
+        self.in_out = (read_byte, address as u32, 0);
     }
 
-    fn lh(mut self, rt: u8, rs: u8, imm: i16)
+    fn lh(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let address = self.reg[rs] + (imm as i32);
+        let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_half, address, 0);
+        self.in_out = (read_half, address as u32, 0);
     }
 
-    fn lw(mut self, rt: u8, rs: u8, imm: i16)
+    fn lw(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let address = self.reg[rs] + (imm as i32);
+        let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_word, address, 0);
+        self.in_out = (read_word, address as u32, 0);
     }
 
-    fn lbu(mut self, rt: u8, rs: u8, imm: i16)
+    fn lbu(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let address = self.reg[rs] + (imm as i32);
+        let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_byte_unsigned, address, 0);
+        self.in_out = (read_byte_unsigned, address as u32, 0);
     }
 
-    fn lhu(mut self, rt: u8, rs: u8, imm: i16)
+    fn lhu(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let address = self.reg[rs] + (imm as i32);
+        let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_half_unsigned, address, 0);
+        self.in_out = (read_half_unsigned, address as u32, 0);
     }
 
-    fn sb(mut self, rt: u8, rs: u8, imm: i16)
+    fn sb(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let data = self.reg[rt] & 0xFF;
-        let address = self.reg[rs] + (imm as i32);
+        let data = self.reg[rt as usize] & 0xFF;
+        let address = self.reg[rs as usize] + (imm as i32);
 
-        self.in_out = (write_byte, address, data);
+        self.in_out = (write_byte, address as u32, data as u32);
     }
 
-    fn sh(mut self, rt: u8, rs: u8, imm: i16)
+    fn sh(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let data = self.reg[rt] & 0xFFFF;
-        let address = self.reg[rs] + (imm as i32);
+        let data = self.reg[rt as usize] & 0xFFFF;
+        let address = self.reg[rs as usize] + (imm as i32);
 
-        self.in_out = (write_half, address, data);
+        self.in_out = (write_half, address as u32, data as u32);
     }
 
-    fn sw(mut self, rt: u8, rs: u8, imm: i16)
+    fn sw(&mut self, rt: u8, rs: u8, imm: i16)
     {
-        let data = self.reg[rt];
-        let address = self.reg[rs] + (imm as i32);
+        let data = self.reg[rt as usize];
+        let address = self.reg[rs as usize] + (imm as i32);
 
-        self.in_out = (write_word, address, data);
+        self.in_out = (write_word, address as u32, data as u32);
     }
 }

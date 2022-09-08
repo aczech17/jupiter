@@ -1,4 +1,3 @@
-extern crate core;
-extern crate core;
-
 mod cpu;
+mod memory;
+mod cpu_aux;
