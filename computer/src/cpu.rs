@@ -7,7 +7,7 @@ use crate::cpu_aux::Phase::*;
 
 
 
-struct CPU
+pub(crate) struct CPU
 {
     fp_reg: [f32; 32],
 
@@ -30,7 +30,7 @@ struct CPU
 
 impl CPU
 {
-    fn new() -> Self
+    pub(crate) fn new() -> Self
     {
         CPU
         {
@@ -69,7 +69,7 @@ impl CPU
         };
     }
 
-    fn tick(&mut self, data: u32) -> (TransferType, u32, u32)
+    pub(crate) fn tick(&mut self, data: u32) -> (TransferType, u32, u32)
     {
         self.in_out.2 = data; // data read from the bus
         match self.phase

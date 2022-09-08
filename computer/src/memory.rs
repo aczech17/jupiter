@@ -1,4 +1,4 @@
-struct Memory
+pub(crate) struct Memory
 {
     data: Vec<u8>,
 }
