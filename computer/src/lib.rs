@@ -17,10 +17,12 @@ pub struct Computer
 
 impl Computer
 {
-    pub fn new(rom_filename: Option<&str>, program_filename: Option<&str>, memory_size: u32) -> Computer
+    pub fn new
+    (rom_filename: Option<&str>, program_filename: Option<&str>, memory_size: u32, vram_size: u32)
+     -> Computer
     {
         let cpu = CPU::new();
-        let memory = Memory::new(rom_filename, program_filename, memory_size);
+        let memory = Memory::new(rom_filename, program_filename, memory_size, vram_size);
         Computer
         {
             cpu,
@@ -66,12 +68,27 @@ impl Computer
         println!("{} {} {}", self.tt_bus as u8, self.addres_bus, self.data_bus);
     }
 
-    fn cycle(&mut self)
+    pub fn cycle(&mut self)
     {
         self.tick(); // IF
         self.tick(); // DEXE
         self.tick(); // MEM
         self.tick(); // WB
+
+        self.display();
+    }
+
+    fn display(&self)
+    {
+        let vram_start = self.memory.vram_start();
+        let vram_end = self.memory.size();
+
+        let pixel_count = (vram_end - vram_start) / 3;
+        for i in 0..pixel_count
+        {
+            let (r, g, b) = self.memory.read_pixel(i);
+            //println!("({}, {}, {})", r, g, b);
+        }
     }
 
     pub fn run(mut self)

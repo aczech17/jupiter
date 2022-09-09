@@ -5,13 +5,20 @@ pub(crate) struct Memory
 {
     data: Vec<u8>,
     rom_size: u32,
+    vram_size: u32,
     size: u32,
 }
 
 impl Memory
 {
-    pub fn new(rom_filename: Option<&str>, program_filename: Option<&str>, size: u32) -> Memory
+    pub fn new(rom_filename: Option<&str>, program_filename: Option<&str>, size: u32, vram_size: u32)
+        -> Memory
     {
+        if vram_size % 3 != 0
+        {
+            panic!("VRAM not aligned by 3");
+        }
+
         let mut data: Vec<u8> = Vec::new();
         let mut rom_size = 0;
         let mut program_size = 0;
@@ -49,6 +56,10 @@ impl Memory
         }
 
         let size_left = size - rom_size as u32 - program_size as u32;
+        if size_left < vram_size
+        {
+            panic!("Could not initialize VRAM. Memory size exceeded");
+        }
         for _ in 0..size_left
         {
             data.push(0);
@@ -58,10 +69,21 @@ impl Memory
         {
             data,
             rom_size: rom_size as u32,
+            vram_size,
             size,
         }
     }
-    
+
+    pub fn size(&self) -> u32
+    {
+        return self.size;
+    }
+
+    pub fn vram_start(&self) -> u32
+    {
+        return self.size - self.vram_size;
+    }
+
     fn address_check(&self, address: usize)
     {
         if address as u32 >= self.size
@@ -122,5 +144,25 @@ impl Memory
         self.data[address + 1] = ((data >> 16) & 0xFF) as u8;
         self.data[address + 2] = ((data >> 8) & 0xFF) as u8;
         self.data[address + 3] = (data & 0xFF) as u8;
+    }
+
+    pub fn read_pixel(&self, pix_num: u32) -> (u8, u8, u8)
+    {
+        let vram_start = self.size - self.vram_size;
+        let address = (vram_start + 3 * pix_num) as usize;
+        let r = self.read_byte(address);
+        let g = self.read_byte(address + 1);
+        let b = self.read_byte(address + 2);
+        return (r, g, b);
+    }
+
+    pub fn write_pixel(&mut self, pix_num: u32, r: u8, g: u8, b: u8)
+    {
+        let vram_start = self.size - self.vram_size;
+        let address = (vram_start + 3 * pix_num) as usize;
+
+        self.write_byte(address, r);
+        self.write_byte(address + 1, g);
+        self.write_byte(address + 2, b);
     }
 }
