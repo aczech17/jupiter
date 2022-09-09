@@ -1,14 +1,11 @@
-#![allow(unused)]
-
 use crate::cpu_aux::TransferType;
 use crate::cpu_aux::TransferType::*;
 use crate::cpu_aux::Phase;
 use crate::cpu_aux::Phase::*;
 
-
-
 pub(crate) struct CPU
 {
+    #[allow(unused)]
     fp_reg: [f32; 32],
 
     reg: [i32; 32],
@@ -125,7 +122,8 @@ impl CPU
                 12 => self.syscall(),
                 16 => self.mfhi(rd),
                 17 => self.mthi(rs),
-                19 => self.mflo(rd),
+                18 => self.mflo(rd),
+                19 => self.mtlo(rs),
                 24 => self.mult(rs, rt),
                 25 => self.multu(rs, rt),
                 26 => self.div(rs, rt),
@@ -581,5 +579,29 @@ impl CPU // opcodes
         let address = self.reg[rs as usize] + (imm as i32);
 
         self.in_out = (write_word, address as u32, data as u32);
+    }
+}
+
+impl CPU // dump
+{
+    #[allow(unused)]
+    fn registers(&self) -> ([i32; 35], [f32; 32])
+    {
+        let mut int_registers = [0; 35];
+        for i in 0..32
+        {
+            int_registers[i] = self.reg[i];
+        }
+        int_registers[32] = self.pc as i32;
+        int_registers[33] = self.hi as i32;
+        int_registers[34] = self.lo as i32;
+
+        let mut float_registers = [0.0; 32];
+        for i in 0..32
+        {
+            float_registers[i] = self.fp_reg[i];
+        }
+
+        return (int_registers, float_registers);
     }
 }

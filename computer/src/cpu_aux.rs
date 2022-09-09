@@ -9,15 +9,15 @@ pub(crate) enum Phase
 #[allow(non_camel_case_types)]
 pub(crate) enum TransferType
 {
-    no_transfer=0,
-    read_byte=1,
-    read_half=2,
-    read_word=3,
-    read_byte_unsigned=4,
-    read_half_unsigned=5,
-    write_byte=6,
-    write_half=7,
-    write_word=8,
+    no_transfer = 0,
+    read_byte = 1,
+    read_half = 2,
+    read_word = 3,
+    read_byte_unsigned = 4,
+    read_half_unsigned = 5,
+    write_byte = 6,
+    write_half = 7,
+    write_word = 8,
 }
 use TransferType::*;
 

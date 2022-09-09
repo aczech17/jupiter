@@ -6,7 +6,7 @@ use cpu::CPU;
 use memory::Memory;
 use crate::cpu_aux::TransferType;
 
-struct Computer
+pub struct Computer
 {
     cpu: CPU,
     memory: Memory,
@@ -17,10 +17,10 @@ struct Computer
 
 impl Computer
 {
-    pub fn new(memory_size: usize) -> Computer
+    pub fn new(rom_filename: Option<&str>, program_filename: Option<&str>, memory_size: u32) -> Computer
     {
         let cpu = CPU::new();
-        let memory = Memory::new(memory_size);
+        let memory = Memory::new(rom_filename, program_filename, memory_size);
         Computer
         {
             cpu,
@@ -31,7 +31,7 @@ impl Computer
         }
     }
 
-    fn tick(mut self)
+    fn tick(&mut self)
     {
         (self.tt_bus, self.addres_bus, self.data_bus) = self.cpu.tick(self.data_bus); // read and receive
 
@@ -60,6 +60,25 @@ impl Computer
 
             write_word =>
                 self.memory.write_word(address, data),
+        }
+
+        #[cfg(debug_assertions)]
+        println!("{} {} {}", self.tt_bus as u8, self.addres_bus, self.data_bus);
+    }
+
+    fn cycle(&mut self)
+    {
+        self.tick(); // IF
+        self.tick(); // DEXE
+        self.tick(); // MEM
+        self.tick(); // WB
+    }
+
+    pub fn run(mut self)
+    {
+        loop
+        {
+            self.cycle();
         }
     }
 }
