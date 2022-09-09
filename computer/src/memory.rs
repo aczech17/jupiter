@@ -64,7 +64,7 @@ impl Memory
     
     fn address_check(&self, address: usize)
     {
-        if address as u32 > self.size
+        if address as u32 >= self.size
         {
             panic!("Address exceeded memory size");
         }

@@ -59,7 +59,13 @@ impl CPU
         match num
         {
             0 => return, // 0 registers is constant 0
-            32 => self.pc = data as u32,
+            32 => {
+                if ((data as u32) % 4) != 0
+                {
+                    panic!("Instruction address not aligned");
+                }
+                self.pc = data as u32
+            },
             33 => self.hi = data,
             34 => self.lo = data,
             n => self.reg[n as usize] = data,
@@ -89,7 +95,7 @@ impl CPU
 
     fn decode_and_execute(&mut self)
     {
-        self.instruction = self.in_out.1;
+        self.instruction = self.in_out.2;
         self.pc += 4;
 
         let opcode = self.instruction & 0b_111111_00000_00000_00000_00000_000000;
@@ -206,6 +212,8 @@ impl CPU
             write_half => {}
             write_word => {}
         }
+        // end of transmission with memory in this cycle
+        self.in_out.0 = no_transfer;
     }
 
     fn write_back(&mut self)
@@ -213,7 +221,6 @@ impl CPU
         self.write_to_reg(self.target, self.result);
 
         // end of cycle
-        self.in_out.0 = no_transfer;
         self.target = 0;
     }
 }
