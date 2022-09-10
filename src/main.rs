@@ -23,10 +23,16 @@ fn draw(frame: &mut [u8], vram: Vec<u8>)
 
 fn main()
 {
-    let mut computer = Computer::new(Some("bios.bin"),
-                                     Some("program.bin"),
-                                     4 * 1024 * 1024,
-                                     800 * 600 * 3);
+    let mut computer = Computer::new(
+        Some("bios.bin"),
+        Some("program.bin"),
+        "disk",
+        1024,
+        4 * 1024 * 1024,
+        3 * 800 * 600,
+    );
+
+
 
     let event_loop = EventLoop::new();
 

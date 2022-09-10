@@ -88,9 +88,21 @@ impl Memory
         }
     }
 
-    pub fn disk_buffer_start(&self) -> u32
+    pub fn disk_buffer_transfer_type_address(&self) -> u32
     {
         return self.rom_size;
+    }
+
+    /*
+    pub fn disk_buffer_sector_number_address(&self) -> u32
+    {
+        return self.rom_size + 1;
+    }
+     */
+
+    pub fn disk_buffer_data_address(&self) -> u32
+    {
+        return self.rom_size + 9;
     }
 
     pub fn vram_start(&self) -> u32

@@ -1,15 +1,18 @@
 mod cpu;
 mod memory;
 mod cpu_aux;
+mod disk;
 
 use cpu::CPU;
 use memory::Memory;
+use disk::Disk;
 use crate::cpu_aux::TransferType;
 
 pub struct Computer
 {
     cpu: CPU,
     memory: Memory,
+    disk: Disk,
     tt_bus: TransferType,
     addres_bus: u32,
     data_bus: u32,
@@ -18,15 +21,18 @@ pub struct Computer
 impl Computer
 {
     pub fn new
-    (rom_filename: Option<&str>, program_filename: Option<&str>, memory_size: u32, vram_size: u32)
+    (rom_filename: Option<&str>, program_filename: Option<&str>, disk_filename: &str, disk_size: u64,
+     memory_size: u32, vram_size: u32)
      -> Computer
     {
         let cpu = CPU::new();
         let memory = Memory::new(rom_filename, program_filename, memory_size, vram_size);
+        let disk = Disk::new(disk_size, disk_filename);
         Computer
         {
             cpu,
             memory,
+            disk,
             tt_bus: TransferType::no_transfer,
             addres_bus: 0,
             data_bus: 0
@@ -74,12 +80,14 @@ impl Computer
         self.tick(); // DEXE
         self.tick(); // MEM
         self.tick(); // WB
+
+        self.disk_controller();
     }
 
 
     pub fn get_disk_buffer(&self) -> (u8, u64, u32)
     {
-        let start = self.memory.disk_buffer_start() as usize;
+        let start = self.memory.disk_buffer_transfer_type_address() as usize;
 
         let transfer_type = self.memory.read_byte(start);
 
@@ -91,6 +99,26 @@ impl Computer
         let data = self.memory.read_word(start + 9);
 
         return (transfer_type, sector, data);
+    }
+
+    fn disk_controller(&mut self)
+    {
+        let (tt, sec_num, data) = self.get_disk_buffer();
+        match tt
+        {
+            0 => {}, // no transfer
+            1 => self.disk.write(sec_num, data), // write to disk
+            2 => {
+                let data = self.disk.read(sec_num);
+                let data_address = self.memory.disk_buffer_data_address();
+                self.memory.write_word(data_address as usize, data); // write data to disk buffer
+            },
+            _ => panic!("Bad disk transfer type"),
+        }
+
+        // end of transmission
+        let tt_addr = self.memory.disk_buffer_transfer_type_address();
+        self.memory.write_byte(tt_addr as usize, 0); // no transfer
     }
 
     pub fn get_vram(&self) -> Vec<u8>
