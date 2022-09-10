@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 computer = {path="./computer"}
+winit = "0.27.2"
+pixels = "0.9.0"

@@ -1,12 +1,15 @@
 use std::fs::File;
 use std::io::Read;
 
+
+const DISK_BUFFER_SIZE: u32 = 1 + 8 + 4;
 pub(crate) struct Memory
 {
     data: Vec<u8>,
+    size: u32,
+
     rom_size: u32,
     vram_size: u32,
-    size: u32,
 }
 
 impl Memory
@@ -20,8 +23,8 @@ impl Memory
         }
 
         let mut data: Vec<u8> = Vec::new();
+
         let mut rom_size = 0;
-        let mut program_size = 0;
         match rom_filename
         {
             Some(filename) => {
@@ -37,6 +40,18 @@ impl Memory
 
             None => {}, // No rom
         }
+        // rom is ok
+
+        let disk_buff_start = rom_size;
+        let disk_buff_end = rom_size + DISK_BUFFER_SIZE as usize;
+        let vram_end = disk_buff_end + vram_size as usize;
+
+        // fill disk buffer and vram with zeros
+        for _ in disk_buff_start..vram_end
+        {
+            data.push(0);
+        }
+
 
         match program_filename
         {
@@ -49,17 +64,16 @@ impl Memory
                     panic!("Could not read program. Memory size exceeded");
                 }
 
-                program_size = data.len() - rom_size;
             }
 
             None => {}, // no program
         }
+        let program_end = data.len();
 
-        let size_left = size - rom_size as u32 - program_size as u32;
-        if size_left < vram_size
-        {
-            panic!("Could not initialize VRAM. Memory size exceeded");
-        }
+
+
+        let size_left = size - program_end as u32;
+
         for _ in 0..size_left
         {
             data.push(0);
@@ -74,15 +88,21 @@ impl Memory
         }
     }
 
-    pub fn size(&self) -> u32
+    pub fn disk_buffer_start(&self) -> u32
     {
-        return self.size;
+        return self.rom_size;
     }
 
     pub fn vram_start(&self) -> u32
     {
-        return self.size - self.vram_size;
+        return self.rom_size + DISK_BUFFER_SIZE;
     }
+
+    pub fn vram_end(&self) -> u32
+    {
+        return self.vram_start() + self.vram_size;
+    }
+
 
     fn address_check(&self, address: usize)
     {
@@ -146,6 +166,7 @@ impl Memory
         self.data[address + 3] = (data & 0xFF) as u8;
     }
 
+    /*
     pub fn read_pixel(&self, pix_num: u32) -> (u8, u8, u8)
     {
         let vram_start = self.size - self.vram_size;
@@ -165,4 +186,6 @@ impl Memory
         self.write_byte(address + 1, g);
         self.write_byte(address + 2, b);
     }
+
+     */
 }
