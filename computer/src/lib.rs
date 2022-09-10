@@ -74,23 +74,25 @@ impl Computer
         self.tick(); // DEXE
         self.tick(); // MEM
         self.tick(); // WB
-
-        self.display();
     }
 
-    fn display(&self)
+    pub fn get_vram(&self) -> Vec<u8>
     {
-        let vram_start = self.memory.vram_start();
-        let vram_end = self.memory.size();
+        let mut vram: Vec<u8> = Vec::new();
+        let from = self.memory.vram_start();
+        let to = self.memory.size();
 
-        let pixel_count = (vram_end - vram_start) / 3;
-        for i in 0..pixel_count
+        for addr in from..to
         {
-            let (r, g, b) = self.memory.read_pixel(i);
-            //println!("({}, {}, {})", r, g, b);
+            let subpixel = self.memory.read_byte(addr as usize);
+            vram.push(subpixel);
         }
+
+        return vram;
     }
 
+
+    #[allow(unused)]
     pub fn run(mut self)
     {
         loop
