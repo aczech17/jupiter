@@ -71,7 +71,7 @@ impl Computer
         }
 
         #[cfg(debug_assertions)]
-        println!("{} {} {}", self.tt_bus as u8, self.addres_bus, self.data_bus);
+        println!("Transfer Type: {}, Address: {} Data: {}", self.tt_bus as u8, self.addres_bus, self.data_bus);
     }
 
     pub fn cycle(&mut self)

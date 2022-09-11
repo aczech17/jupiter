@@ -24,14 +24,19 @@ fn draw(frame: &mut [u8], vram: Vec<u8>)
 fn main()
 {
     let mut computer = Computer::new(
-        Some("bios.bin"),
-        Some("program.bin"),
+        Some("npr.bin"),
+        None,
         "disk",
         1024,
         4 * 1024 * 1024,
         3 * 800 * 600,
     );
 
+
+    /*
+    computer.run();
+    return;
+     */
 
 
     let event_loop = EventLoop::new();
@@ -76,5 +81,9 @@ fn main()
                     return;
                 }
             }
+
+            computer.cycle();
+            let vram = computer.get_vram();
+            draw(pixels.get_frame(), vram);
         });
 }

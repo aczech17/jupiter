@@ -98,13 +98,13 @@ impl CPU
         self.instruction = self.in_out.2;
         self.pc += 4;
 
-        let opcode = self.instruction & 0b_111111_00000_00000_00000_00000_000000;
+        let opcode = (self.instruction & 0b_111111_00000_00000_00000_00000_000000) >> 26;
 
         // R
-        let rs = (self.instruction &     0b_000000_11111_00000_00000_00000_000000) as u8;
-        let rt = (self.instruction &     0b_000000_00000_11111_00000_00000_000000) as u8;
-        let rd = (self.instruction &     0b_000000_00000_00000_11111_00000_000000) as u8;
-        let shift = (self.instruction &  0b_000000_00000_00000_00000_11111_000000) as u8;
+        let rs = ((self.instruction &     0b_000000_11111_00000_00000_00000_000000) >> 21) as u8;
+        let rt = ((self.instruction &     0b_000000_00000_11111_00000_00000_000000) >> 16) as u8;
+        let rd = ((self.instruction &     0b_000000_00000_00000_11111_00000_000000) >> 11) as u8;
+        let shift = ((self.instruction &  0b_000000_00000_00000_00000_11111_000000) >> 6) as u8;
         let funct = (self.instruction &  0b_000000_00000_00000_00000_00000_111111) as u8;
 
         // I
@@ -112,6 +112,11 @@ impl CPU
 
         // J
         let address = self.instruction & 0x_00_03_FF_FF; // 26 youngest bits
+
+        #[cfg(debug_assertions)]
+        println!("Instruction: {:#032b}", self.instruction);
+        #[cfg(debug_assertions)]
+        println!("Opcode: {}, Address: {}", opcode, address);
 
         if opcode == 0
         {
