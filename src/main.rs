@@ -8,7 +8,8 @@ fn main()
 {
 
     let (rom_filename, program_filename,
-        disk_filename, disk_size, memory_size, vram_size) =
+        disk_filename, disk_size, memory_size, width, height,
+        vram_size) =
     get_args();
 
 
@@ -17,5 +18,5 @@ fn main()
         program_filename,
         disk_filename, disk_size, memory_size, vram_size);
 
-    display(computer, 800, 600);
+    display(computer, width, height);
 }

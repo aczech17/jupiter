@@ -6,6 +6,8 @@ pub(crate) fn get_args() -> (
     String, // disk filename
     u64, // disk size
     u32, // memory size
+    u32, // width
+    u32, // height
     u32, // vram size
     )
 {
@@ -41,10 +43,10 @@ pub(crate) fn get_args() -> (
     let disk_filename = args[3].clone();
     let disk_size = *&args[4].parse::<u64>().unwrap();
     let memory_size = *&args[5].parse::<u32>().unwrap();
-    let width = &args[6].parse::<u32>().unwrap();
-    let height = &args[7].parse::<u32>().unwrap();
+    let width = *&args[6].parse::<u32>().unwrap();
+    let height = *&args[7].parse::<u32>().unwrap();
 
     let vram_size = 3 * width * height;
 
-    (rom_filename, program_filename, disk_filename, disk_size, memory_size, vram_size)
+    (rom_filename, program_filename, disk_filename, disk_size, memory_size, width, height, vram_size)
 }
