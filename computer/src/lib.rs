@@ -21,7 +21,7 @@ pub struct Computer
 impl Computer
 {
     pub fn new
-    (rom_filename: Option<&str>, program_filename: Option<&str>, disk_filename: &str, disk_size: u64,
+    (rom_filename: Option<String>, program_filename: Option<String>, disk_filename: String, disk_size: u64,
      memory_size: u32, vram_size: u32)
      -> Computer
     {

@@ -9,18 +9,18 @@ pub(crate) struct Disk
 
 impl Disk
 {
-    pub(crate) fn new(size: u64, filename: &str) -> Disk
+    pub(crate) fn new(size: u64, filename: String) -> Disk
     {
         if size % 4 != 0
         {
             panic!("Size should be divisible by 4");
         }
-        match File::open(filename)
+        match File::open(filename.clone())
         {
             Ok(file) => return Disk {disk_file: file, size},
             Err(_) => {}, // go on and create a new file
         }
-        let file = File::create(filename).expect("Could not create disk file");
+        let file = File::create(filename.clone()).expect("Could not create disk file");
         Disk
         {
             disk_file: file,

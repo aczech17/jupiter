@@ -14,7 +14,7 @@ pub(crate) struct Memory
 
 impl Memory
 {
-    pub fn new(rom_filename: Option<&str>, program_filename: Option<&str>, size: u32, vram_size: u32)
+    pub fn new(rom_filename: Option<String>, program_filename: Option<String>, size: u32, vram_size: u32)
         -> Memory
     {
         if vram_size % 3 != 0
