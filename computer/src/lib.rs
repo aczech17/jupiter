@@ -33,7 +33,7 @@ impl Computer
             cpu,
             memory,
             disk,
-            tt_bus: TransferType::no_transfer,
+            tt_bus: TransferType::NoTransfer,
             addres_bus: 0,
             data_bus: 0
         }
@@ -49,24 +49,24 @@ impl Computer
         use TransferType::*;
         match self.tt_bus
         {
-            no_transfer => {},
+            NoTransfer => {},
 
-            read_byte | read_byte_unsigned =>
+            ReadByte | ReadByteUnsigned =>
                 self.data_bus = self.memory.read_byte(address) as u32,
 
-            read_half | read_half_unsigned =>
+            ReadHalf | ReadHalfUnsigned =>
                 self.data_bus = self.memory.read_half(address) as u32,
 
-            read_word =>
+            ReadWord =>
                 self.data_bus = self.memory.read_word(address),
 
-            write_byte =>
+            WriteByte =>
                 self.memory.write_byte(address, data as u8),
 
-            write_half =>
+            WriteHalf =>
                 self.memory.write_half(address, data as u16),
 
-            write_word =>
+            WriteWord =>
                 self.memory.write_word(address, data),
         }
 

@@ -55,9 +55,6 @@ pub(crate) fn display(mut computer: Computer, width: u32, height: u32)
 
             if let Event::RedrawRequested(_) = event
             {
-                computer.cycle();
-                let vram = computer.get_vram();
-                draw(pixels.get_frame(), vram);
                 if pixels.render().is_err()
                 {
                     *control_flow = ControlFlow::Exit;

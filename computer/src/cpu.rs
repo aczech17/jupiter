@@ -39,7 +39,7 @@ impl CPU
             instruction: 0,
             result: 0,
             target: 0,
-            in_out: (no_transfer, 0, 0),
+            in_out: (NoTransfer, 0, 0),
             phase: IF
         }
     }
@@ -89,7 +89,7 @@ impl CPU
 
     fn fetch(&mut self)
     {
-        let (transfer_type, address, data) = (read_word, self.pc, 0);
+        let (transfer_type, address, data) = (ReadWord, self.pc, 0);
         self.in_out = (transfer_type, address, data);
     }
 
@@ -188,37 +188,37 @@ impl CPU
         // target is already filled
         match self.in_out.0
         {
-            no_transfer => {},
-            read_byte => {
+            NoTransfer => {},
+            ReadByte => {
                 let data = self.in_out.2;
                 let data = data as u8 as i8 as i32; // sign extension
                 self.result = data;
             }
-            read_half => {
+            ReadHalf => {
                 let data = self.in_out.2;
                 let data = data as u8 as i8 as i32; // sign extension
                 self.result = data;
             }
-            read_word => {
+            ReadWord => {
                 let data = self.in_out.2;
                 self.result = data as i32;
             }
-            read_byte_unsigned => {
+            ReadByteUnsigned => {
                 let data = self.in_out.2;
                 let data = data & 0xFF;
                 self.result = data as i32;
             }
-            read_half_unsigned => {
+            ReadHalfUnsigned => {
                 let data = self.in_out.2;
                 let data = data & 0xFFFF;
                 self.result = data as i32;
             }
-            write_byte => {}
-            write_half => {}
-            write_word => {}
+            WriteByte => {}
+            WriteHalf => {}
+            WriteWord => {}
         }
         // end of transmission with memory in this cycle
-        self.in_out.0 = no_transfer;
+        self.in_out.0 = NoTransfer;
     }
 
     fn write_back(&mut self)
@@ -534,7 +534,7 @@ impl CPU // opcodes
         let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_byte, address as u32, 0);
+        self.in_out = (ReadByte, address as u32, 0);
     }
 
     fn lh(&mut self, rt: u8, rs: u8, imm: i16)
@@ -542,7 +542,7 @@ impl CPU // opcodes
         let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_half, address as u32, 0);
+        self.in_out = (ReadHalf, address as u32, 0);
     }
 
     fn lw(&mut self, rt: u8, rs: u8, imm: i16)
@@ -550,7 +550,7 @@ impl CPU // opcodes
         let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_word, address as u32, 0);
+        self.in_out = (ReadWord, address as u32, 0);
     }
 
     fn lbu(&mut self, rt: u8, rs: u8, imm: i16)
@@ -558,7 +558,7 @@ impl CPU // opcodes
         let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_byte_unsigned, address as u32, 0);
+        self.in_out = (ReadByteUnsigned, address as u32, 0);
     }
 
     fn lhu(&mut self, rt: u8, rs: u8, imm: i16)
@@ -566,7 +566,7 @@ impl CPU // opcodes
         let address = self.reg[rs as usize] + (imm as i32);
 
         self.target = rt;
-        self.in_out = (read_half_unsigned, address as u32, 0);
+        self.in_out = (ReadHalfUnsigned, address as u32, 0);
     }
 
     fn sb(&mut self, rt: u8, rs: u8, imm: i16)
@@ -574,7 +574,7 @@ impl CPU // opcodes
         let data = self.reg[rt as usize] & 0xFF;
         let address = self.reg[rs as usize] + (imm as i32);
 
-        self.in_out = (write_byte, address as u32, data as u32);
+        self.in_out = (WriteByte, address as u32, data as u32);
     }
 
     fn sh(&mut self, rt: u8, rs: u8, imm: i16)
@@ -582,7 +582,7 @@ impl CPU // opcodes
         let data = self.reg[rt as usize] & 0xFFFF;
         let address = self.reg[rs as usize] + (imm as i32);
 
-        self.in_out = (write_half, address as u32, data as u32);
+        self.in_out = (WriteHalf, address as u32, data as u32);
     }
 
     fn sw(&mut self, rt: u8, rs: u8, imm: i16)
@@ -590,7 +590,7 @@ impl CPU // opcodes
         let data = self.reg[rt as usize];
         let address = self.reg[rs as usize] + (imm as i32);
 
-        self.in_out = (write_word, address as u32, data as u32);
+        self.in_out = (WriteWord, address as u32, data as u32);
     }
 }
 

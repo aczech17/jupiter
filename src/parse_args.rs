@@ -76,7 +76,14 @@ pub(crate) fn get_args() -> (
     let memory_size = parse_size(&args[5]);
     let memory_size = match memory_size
     {
-        Some(size) => size as u32,
+        Some(size) =>
+            {
+                if size >= 1 << 32
+                {
+                    panic!("Memory too big");
+                }
+                size as u32
+            }
         None => panic!("Bad memory size"),
     };
 
