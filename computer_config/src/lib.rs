@@ -16,7 +16,7 @@ pub struct Config
 
 impl Config
 {
-    pub fn parse_size(input: &String) -> Option<u64>
+    fn parse_size(input: &String) -> Option<u64>
     {
         match input.parse::<u64>()
         {
@@ -54,7 +54,7 @@ impl Config
 
     fn from_file(filename: &String) -> Config
     {
-        let mut file = File::open(filename).expect("DUPA");
+        let mut file = File::open(filename).unwrap();
 
         let mut args_string = String::new();
         file.read_to_string(&mut args_string).expect("Nie wiem");
