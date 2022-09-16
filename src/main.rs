@@ -1,22 +1,19 @@
-mod parse_args;
-use parse_args::get_args;
+mod arguments;
+use arguments::get_args;
 use computer::*;
 mod display;
 use display::display;
+use computer_config::Config;
+
 
 fn main()
 {
 
-    let (rom_filename, program_filename,
-        disk_filename, disk_size, memory_size, width, height,
-        vram_size) =
-    get_args();
-
-
-    let computer = Computer::new(
-        rom_filename,
-        program_filename,
-        disk_filename, disk_size, memory_size, vram_size);
+    let args = get_args();
+    let config = Config::from_args(args);
+    let width = config.width();
+    let height = config.height();
+    let computer = Computer::new(config);
 
     display(computer, width, height);
 }

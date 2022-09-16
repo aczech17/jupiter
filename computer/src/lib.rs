@@ -8,6 +8,8 @@ use memory::Memory;
 use disk::Disk;
 use crate::cpu_aux::TransferType;
 
+use computer_config::Config;
+
 pub struct Computer
 {
     cpu: CPU,
@@ -20,14 +22,31 @@ pub struct Computer
 
 impl Computer
 {
-    pub fn new
-    (rom_filename: Option<String>, program_filename: Option<String>, disk_filename: String, disk_size: u64,
+    pub fn new(config: Config) -> Computer
+    {
+        Self::make_computer(
+            config.rom_filename(),
+            config.program_filename(),
+            config.disk_filename(),
+            config.disk_size(),
+            config.memory_size(),
+            config.vram_size(),
+        )
+    }
+}
+
+impl Computer
+{
+    fn make_computer
+    (rom_filename: &Option<String>, program_filename: &Option<String>, disk_filename: &String, disk_size: u64,
      memory_size: u32, vram_size: u32)
      -> Computer
     {
+
+
         let cpu = CPU::new();
         let memory = Memory::new(rom_filename, program_filename, memory_size, vram_size);
-        let disk = Disk::new(disk_size, disk_filename);
+        let disk = Disk::new(disk_size, &disk_filename);
         Computer
         {
             cpu,

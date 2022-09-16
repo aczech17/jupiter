@@ -9,7 +9,7 @@ pub(crate) struct Disk
 
 impl Disk
 {
-    pub(crate) fn new(size: u64, filename: String) -> Disk
+    pub(crate) fn new(size: u64, filename: &String) -> Disk
     {
         if size % 4 != 0
         {
