@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::Read;
+
 pub struct Config
 {
     rom_filename: Option<String>,
@@ -13,7 +16,7 @@ pub struct Config
 
 impl Config
 {
-    fn parse_size(input: &String) -> Option<u64>
+    pub fn parse_size(input: &String) -> Option<u64>
     {
         match input.parse::<u64>()
         {
@@ -38,6 +41,30 @@ impl Config
     }
 
     pub fn from_args(args: Vec<String>) -> Config
+    {
+        if args.len() == 8
+        {
+            return Self::parse_args(args);
+        }
+
+        let filename = &args[1];
+
+        return Self::from_file(filename);
+    }
+
+    fn from_file(filename: &String) -> Config
+    {
+        let mut file = File::open(filename).expect("DUPA");
+
+        let mut args_string = String::new();
+        file.read_to_string(&mut args_string).expect("Nie wiem");
+
+        let args: Vec<String> = args_string.lines().map(|s| s.to_string()).collect();
+
+        Self::parse_args(args)
+    }
+
+    fn parse_args(args: Vec<String>) -> Config
     {
         let rom_filename = if args[1].to_lowercase() == "none"
         {

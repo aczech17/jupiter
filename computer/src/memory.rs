@@ -177,27 +177,4 @@ impl Memory
         self.data[address + 2] = ((data >> 8) & 0xFF) as u8;
         self.data[address + 3] = (data & 0xFF) as u8;
     }
-
-    /*
-    pub fn read_pixel(&self, pix_num: u32) -> (u8, u8, u8)
-    {
-        let vram_start = self.size - self.vram_size;
-        let address = (vram_start + 3 * pix_num) as usize;
-        let r = self.read_byte(address);
-        let g = self.read_byte(address + 1);
-        let b = self.read_byte(address + 2);
-        return (r, g, b);
-    }
-
-    pub fn write_pixel(&mut self, pix_num: u32, r: u8, g: u8, b: u8)
-    {
-        let vram_start = self.size - self.vram_size;
-        let address = (vram_start + 3 * pix_num) as usize;
-
-        self.write_byte(address, r);
-        self.write_byte(address + 1, g);
-        self.write_byte(address + 2, b);
-    }
-
-     */
 }

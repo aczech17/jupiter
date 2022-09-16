@@ -14,7 +14,7 @@ fn draw(frame: &mut [u8], vram: Vec<u8>)
         let r = vram[address];
         let g = vram[address + 1];
         let b = vram[address + 2];
-        let rgba= [r, g, b, 255];
+        let rgba = [r, g, b, 255];
 
         pixel.copy_from_slice(&rgba);
     }

@@ -142,16 +142,17 @@ impl Computer
 
     pub fn get_vram(&self) -> Vec<u8>
     {
-        let mut data: Vec<u8> = Vec::new();
+        let mut vram: Vec<u8> = Vec::new();
 
         let from = self.memory.vram_start();
         let to = self.memory.vram_end();
 
         for address in from..to
         {
-            data.push(self.memory.read_byte(address as usize));
+            let subpixel = self.memory.read_byte(address as usize);
+            vram.push(subpixel);
         }
-        return data;
+        return vram;
     }
 
     #[allow(unused)]
