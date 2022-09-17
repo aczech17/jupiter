@@ -113,10 +113,10 @@ impl CPU
         // J
         let address = self.instruction & 0x_00_03_FF_FF; // 26 youngest bits
 
-        #[cfg(debug_assertions)]
-        println!("Instruction: {:#032b}", self.instruction);
-        #[cfg(debug_assertions)]
-        println!("Opcode: {}, Address: {}", opcode, address);
+        //#[cfg(debug_assertions)]
+        //println!("Instruction: {:#032b}", self.instruction);
+        // #[cfg(debug_assertions)]
+        //println!("Opcode: {}, Address: {}", opcode, address);
 
         if opcode == 0
         {

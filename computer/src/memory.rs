@@ -155,6 +155,9 @@ impl Memory
 
     pub fn write_byte(&mut self, address: usize, data: u8)
     {
+        #[cfg(debug_assertions)]
+        println!("{} {}", address, data);
+
         self.address_check(address);
         self.write_address_check(address);
         self.data[address] = data;
