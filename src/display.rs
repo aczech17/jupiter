@@ -8,12 +8,14 @@ use pixels::{Pixels, SurfaceTexture};
 
 fn draw(frame: &mut [u8], vram: Vec<u8>)
 {
-    for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+    for (i, pixel) in frame.chunks_exact_mut(4).enumerate()
+    {
 
         let address = 3 * i;
         let r = vram[address];
         let g = vram[address + 1];
         let b = vram[address + 2];
+
         let rgba = [r, g, b, 255];
 
         pixel.copy_from_slice(&rgba);

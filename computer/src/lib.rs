@@ -123,19 +123,33 @@ impl Computer
     fn disk_controller(&mut self)
     {
         let (tt, sec_num, data) = self.get_disk_buffer();
+
+        #[cfg(debug_assertions)]
+        println!("disk controller: {} {} {}", tt, sec_num, data);
+
         match tt
         {
             0 => {}, // no transfer
-            1 => self.disk.write(sec_num, data), // write to disk
+            1 => {
+
+                #[cfg(debug_assertions)]
+                println!("Write {} to {}", data, sec_num);
+
+                self.disk.write(sec_num, data);
+                self.end_disk_transmission();
+            },
             2 => {
                 let data = self.disk.read(sec_num);
                 let data_address = self.memory.disk_buffer_data_address();
                 self.memory.write_word(data_address as usize, data); // write data to disk buffer
+                self.end_disk_transmission();
             },
             _ => panic!("Bad disk transfer type"),
         }
+    }
 
-        // end of transmission
+    fn end_disk_transmission(&mut self)
+    {
         let tt_addr = self.memory.disk_buffer_transfer_type_address();
         self.memory.write_byte(tt_addr as usize, 0); // no transfer
     }
