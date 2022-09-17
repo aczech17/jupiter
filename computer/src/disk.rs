@@ -1,4 +1,5 @@
 use std::fs::File;
+use std::fs::OpenOptions;
 
 #[cfg(target_os = "linux")]
 use std::os::unix::fs::FileExt;
@@ -8,7 +9,7 @@ use std::os::windows::fs::FileExt;
 
 pub(crate) struct Disk
 {
-    disk_file: File,
+    filename: String,
     size: u64,
 }
 
@@ -22,14 +23,16 @@ impl Disk
         }
         match File::open(filename.clone())
         {
-            Ok(file) => return Disk {disk_file: file, size},
-            Err(_) => {}, // go on and create a new file
+            Ok(_) => {}, // file already exists
+            Err(_) => {
+                File::create(filename.clone()).expect("Could not create a disk");
+            },
         }
-        let file = File::create(filename.clone()).expect("Could not create disk file");
+
         Disk
         {
-            disk_file: file,
-            size,
+            filename: filename.clone(),
+            size
         }
     }
 
@@ -40,9 +43,10 @@ impl Disk
         {
             panic!("Bad sector read");
         }
-        let mut buf: [u8; 4] = [0; 4];
 
-        self.disk_file.seek_read(&mut buf, sector_num).expect("DUPA");
+        let file = File::open(&self.filename).expect("Could not open the disk");
+        let mut buf: [u8; 4] = [0; 4];
+        file.seek_read(&mut buf, sector_num).expect("Could not read from the disk");
 
         let sector = ((buf[0] as u32) << 24) |
             ((buf[1] as u32) << 16) |
@@ -60,9 +64,14 @@ impl Disk
             panic!("Bad sector write");
         }
 
+        let file = OpenOptions::new()
+            .append(false)
+            .write(true)
+            .open(&self.filename)
+            .expect("Could not open the file");
+
         let buf: [u8; 4] = [(data >> 24) as u8, ((data >> 16) & 0xFF) as u8,
             ((data >> 8) & 0xFF) as u8, (data & 0xFF) as u8];
-
-        self.disk_file.seek_write(&buf, sector_num).expect("PIZDA");
+        file.seek_write(&buf, sector_num).expect("Could not write to the file");
     }
 }
