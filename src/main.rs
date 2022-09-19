@@ -10,7 +10,6 @@ use display::display;
 
 fn main()
 {
-    // test feature
     let args = get_args();
     let config = Config::from_args(args);
     let width = config.width();
