@@ -40,7 +40,7 @@ pub(crate) fn display(mut computer: Computer, width: u32, height: u32)
 
     let window_size = window.inner_size();
     let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
-    let mut pixels = Pixels::new(800, 600, surface_texture).unwrap();
+    let mut pixels = Pixels::new(width, height, surface_texture).unwrap();
 
     event_loop.run(move |event, _, control_flow|
         {
