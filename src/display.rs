@@ -45,14 +45,14 @@ pub(crate) fn display(mut computer: Computer, width: u32, height: u32)
     event_loop.run(move |event, _, control_flow|
         {
             *control_flow = ControlFlow::Wait;
-            match event
+
+            if let Event::WindowEvent
             {
-                Event::WindowEvent
-                {
-                    event: WindowEvent::CloseRequested,
-                    ..
-                } => *control_flow = ControlFlow::Exit,
-                _ => ()
+                event: WindowEvent::CloseRequested,
+                ..
+            } = event
+            {
+                *control_flow = ControlFlow::Exit;
             }
 
             if let Event::RedrawRequested(_) = event
