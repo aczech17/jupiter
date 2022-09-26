@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 computer_config = {path="../computer_config"}
+device_query = "0.2.8"
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3.9", features = ["winuser"] }

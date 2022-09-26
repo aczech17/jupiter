@@ -1,20 +1,33 @@
+extern crate core;
+
 mod cpu;
 mod memory;
 mod cpu_aux;
 mod disk;
+mod keyboard;
+mod mouse;
 
 use cpu::CPU;
 use memory::Memory;
 use disk::Disk;
+use keyboard::Keyboard;
+use mouse::Mouse;
+
 use crate::cpu_aux::TransferType;
 
 use computer_config::Config;
 
 pub struct Computer
 {
-    cpu: CPU,
     memory: Memory,
+
+    // devices
+    cpu: CPU,
     disk: Disk,
+    keyboard: Keyboard,
+    mouse: Mouse,
+    //
+
     tt_bus: TransferType,
     addres_bus: u32,
     data_bus: u32,
@@ -47,18 +60,48 @@ impl Computer
         let cpu = CPU::new();
         let memory = Memory::new(rom_filename, program_filename, memory_size, vram_size);
         let disk = Disk::new(disk_size, &disk_filename);
+        let keyboard = Keyboard::new();
+        let mouse = Mouse::new();
         Computer
         {
             cpu,
             memory,
             disk,
+            keyboard,
+            mouse,
             tt_bus: TransferType::NoTransfer,
             addres_bus: 0,
             data_bus: 0
         }
     }
 
-    fn tick(&mut self)
+
+
+    pub fn cycle(&mut self)
+    {
+        self.cpu_tick(); // IF
+        self.cpu_tick(); // DEXE
+        self.cpu_tick(); // MEM
+        self.cpu_tick(); // WB
+
+        self.disk_controller();
+        self.keyboard_controller();
+        self.mouse_controller();
+    }
+
+    #[allow(unused)]
+    pub fn run(mut self)
+    {
+        loop
+        {
+            self.cycle();
+        }
+    }
+}
+
+impl Computer // communication with devices (CPU, disk, display etc.)
+{
+    fn cpu_tick(&mut self)
     {
         (self.tt_bus, self.addres_bus, self.data_bus) = self.cpu.tick(self.data_bus); // read and receive
 
@@ -93,14 +136,26 @@ impl Computer
         println!("Transfer Type: {}, Address: {} Data: {}", self.tt_bus as u8, self.addres_bus, self.data_bus);
     }
 
-    pub fn cycle(&mut self)
+    pub fn get_vram(&self) -> Vec<u8>
     {
-        self.tick(); // IF
-        self.tick(); // DEXE
-        self.tick(); // MEM
-        self.tick(); // WB
+        let mut vram: Vec<u8> = Vec::new();
 
-        self.disk_controller();
+        let from = self.memory.vram_start();
+        let to = self.memory.vram_end();
+
+        #[cfg(debug_assertions)]
+        println!("from {from} to {to}");
+
+        for address in from..to
+        {
+            let subpixel = self.memory.read_byte(address as usize);
+            vram.push(subpixel);
+        }
+
+        #[cfg(debug_assertions)]
+        println!("vram size: {}", vram.len());
+
+        return vram;
     }
 
 
@@ -154,27 +209,35 @@ impl Computer
         self.memory.write_byte(tt_addr as usize, 0); // no transfer
     }
 
-    pub fn get_vram(&self) -> Vec<u8>
+    fn keyboard_controller(&mut self)
     {
-        let mut vram: Vec<u8> = Vec::new();
-
-        let from = self.memory.vram_start();
-        let to = self.memory.vram_end();
-
-        for address in from..to
+        let from = self.memory.keyboard_buffer_address();
+        let to = self.memory.keyboard_buffer_end_address();
+        for i in from..to
         {
-            let subpixel = self.memory.read_byte(address as usize);
-            vram.push(subpixel);
+            self.memory.write_byte(i as usize, 0);
         }
-        return vram;
+
+        let keys_pushed = self.keyboard.get_keys();
+        for key in keys_pushed
+        {
+            let address = self.memory.keyboard_buffer_address() + key as u32;
+            self.memory.write_byte(address as usize, 1);
+        }
     }
 
-    #[allow(unused)]
-    pub fn run(mut self)
+    fn mouse_controller(&mut self)
     {
-        loop
-        {
-            self.cycle();
-        }
+        let x_addr = self.memory.mouse_buffer_address();
+        let y_addr = x_addr + 4;
+        let lmb_addr = y_addr + 4;
+        let rmb_addr = lmb_addr + 1;
+
+        let (x, y, lmb, rmb) = self.mouse.get_mouse();
+
+        self.memory.write_word(x_addr as usize, x);
+        self.memory.write_word(y_addr as usize, y);
+        self.memory.write_byte(lmb_addr as usize, lmb as u8);
+        self.memory.write_byte(rmb_addr as usize, rmb as u8);
     }
 }
