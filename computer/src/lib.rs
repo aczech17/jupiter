@@ -132,8 +132,8 @@ impl Computer // communication with devices (CPU, disk, display etc.)
                 self.memory.write_word(address, data),
         }
 
-        #[cfg(debug_assertions)]
-        println!("Transfer Type: {}, Address: {} Data: {}", self.tt_bus as u8, self.addres_bus, self.data_bus);
+        //#[cfg(debug_assertions)]
+        //println!("Transfer Type: {}, Address: {} Data: {}", self.tt_bus as u8, self.addres_bus, self.data_bus);
     }
 
     pub fn get_vram(&self) -> Vec<u8>
@@ -143,8 +143,8 @@ impl Computer // communication with devices (CPU, disk, display etc.)
         let from = self.memory.vram_start();
         let to = self.memory.vram_end();
 
-        #[cfg(debug_assertions)]
-        println!("from {from} to {to}");
+        //#[cfg(debug_assertions)]
+        //println!("from {from} to {to}");
 
         for address in from..to
         {
@@ -152,8 +152,8 @@ impl Computer // communication with devices (CPU, disk, display etc.)
             vram.push(subpixel);
         }
 
-        #[cfg(debug_assertions)]
-        println!("vram size: {}", vram.len());
+        //#[cfg(debug_assertions)]
+        //println!("vram size: {}", vram.len());
 
         return vram;
     }
@@ -179,16 +179,16 @@ impl Computer // communication with devices (CPU, disk, display etc.)
     {
         let (tt, sec_num, data) = self.get_disk_buffer();
 
-        #[cfg(debug_assertions)]
-        println!("disk controller: {} {} {}", tt, sec_num, data);
+        //#[cfg(debug_assertions)]
+        //println!("disk controller: {} {} {}", tt, sec_num, data);
 
         match tt
         {
             0 => {}, // no transfer
             1 => {
 
-                #[cfg(debug_assertions)]
-                println!("Write {} to {}", data, sec_num);
+                //#[cfg(debug_assertions)]
+                //println!("Write {} to {}", data, sec_num);
 
                 self.disk.write(sec_num, data);
                 self.end_disk_transmission();

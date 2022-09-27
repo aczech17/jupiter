@@ -29,8 +29,11 @@ impl Memory
         {
             None => 0,
             Some(filename) => {
+
+                //eprintln!("Rom FILEname: {}", filename);
                 let mut rom_file = File::open(filename).unwrap();
-                rom_file.read(&mut data).unwrap();
+                rom_file.read_to_end(&mut data).unwrap();
+
                 let file_size = rom_file.metadata().unwrap().len() as u32;
                 file_size
             },
@@ -74,7 +77,7 @@ impl Memory
             None => 0,
             Some(filename) => {
                 let mut program_file = File::open(filename).unwrap();
-                program_file.read(&mut data).unwrap();
+                program_file.read_to_end(&mut data).unwrap();
                 let file_size = program_file.metadata().unwrap().len() as u32;
                 file_size
             }
@@ -175,7 +178,7 @@ impl Memory
     pub fn write_byte(&mut self, address: usize, data: u8)
     {
         #[cfg(debug_assertions)]
-        println!("{} {}", address, data);
+        println!("Writing {data} to {address}");
 
         self.address_check(address);
         self.write_address_check(address);

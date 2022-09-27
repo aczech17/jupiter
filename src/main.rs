@@ -16,6 +16,5 @@ fn main()
     let height = config.height();
 
     let computer = Computer::new(config);
-
     display(computer, width, height);
 }
