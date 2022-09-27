@@ -115,8 +115,9 @@ impl CPU
 
         //#[cfg(debug_assertions)]
         //println!("Instruction: {:#032b}", self.instruction);
-        // #[cfg(debug_assertions)]
-        //println!("Opcode: {}, Address: {}", opcode, address);
+
+        //#[cfg(debug_assertions)]
+        //println!("Opcode: {}, Address: {}", opcode, address << 2);
 
         if opcode == 0
         {
